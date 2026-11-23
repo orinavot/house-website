@@ -1,0 +1,131 @@
+---
+/**
+ * Architectural photograph with a fixed crop ratio, responsive AVIF/WebP and
+ * an optional offset 1px frame (the "drawing" line that sits around images).
+ */
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  /** CSS aspect-ratio, e.g. "4 / 5". Override per breakpoint by setting --ratio / --focus on an ancestor. */
+  ratio: string;
+  sizes: string;
+  /** object-position for the crop. */
+  focus?: string;
+  priority?: boolean;
+  /**
+   * Broken hairline frame: only two sides are drawn, meeting at one corner
+   * (bl = bottom-left, br, tl, tr). Each photo gets a different corner.
+   */
+  frame?: 'bl' | 'br' | 'tl' | 'tr';
+  class?: string;
+  widths?: number[];
+}
+
+const {
+  src,
+  alt,
+  ratio,
+  sizes,
+  focus = '50% 50%',
+  priority = false,
+  frame,
+  class: className,
+  widths = [480, 720, 960, 1280, 1536],
+} = Astro.props;
+const usable = [...new Set([...widths.filter((w) => w < src.width), src.width])];
+
+// object-fit: cover enlarges the bitmap when the crop is narrower than the
+// source (e.g. a 4:5 crop of a 3:2 photo). Scale `sizes` so the browser picks
+// a file wide enough to stay sharp.
+const [rw, rh] = ratio.split('/').map((n) => parseFloat(n));
+const cropFactor = Math.max(1, src.width / src.height / (rw / rh));
+const effectiveSizes =
+  cropFactor === 1
+    ? sizes
+    : sizes
+        .split(',')
+        .map((entry) => {
+          const parts = entry.trim().split(/\s+(?=[^\s]+$)/);
+          const length = parts.pop()!;
+          return [...parts, `calc(${length} * ${cropFactor.toFixed(3)})`].join(' ');
+        })
+        .join(', ');
+---
+
+<figure
+  class:list={['photo', frame && `photo--frame photo--frame-${frame}`, className]}
+  style={`--ratio-default:${ratio};--focus-default:${focus}`}
+  data-reveal="image"
+>
+  <div class="photo__crop">
+    <Picture
+      src={src}
+      alt={alt}
+      formats={['avif', 'webp']}
+      fallbackFormat="jpg"
+      widths={usable}
+      sizes={effectiveSizes}
+      quality={72}
+      loading={priority ? 'eager' : 'lazy'}
+      decoding={priority ? 'sync' : 'async'}
+      fetchpriority={priority ? 'high' : 'auto'}
+    />
+  </div>
+</figure>
+
+<style>
+  .photo {
+    position: relative;
+  }
+  .photo__crop {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: var(--ratio, var(--ratio-default));
+    background: var(--c-stone);
+  }
+  .photo__crop :global(picture),
+  .photo__crop :global(img) {
+    width: 100%;
+    height: 100%;
+  }
+  .photo__crop :global(img) {
+    object-fit: cover;
+    object-position: var(--focus, var(--focus-default));
+  }
+  /* Broken offset frame: two 1px sides meeting at one corner, like a
+     dimension mark on a drawing. They run slightly past the image. */
+  .photo--frame {
+    --frame-offset: 0.75rem;
+  }
+  .photo--frame::before {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * var(--frame-offset));
+    border: 0 solid var(--c-smoked);
+    pointer-events: none;
+  }
+  .photo--frame-bl::before {
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+  }
+  .photo--frame-br::before {
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+  .photo--frame-tl::before {
+    border-left-width: 1px;
+    border-top-width: 1px;
+  }
+  .photo--frame-tr::before {
+    border-right-width: 1px;
+    border-top-width: 1px;
+  }
+  @media (min-width: 64em) {
+    .photo--frame {
+      --frame-offset: 1.125rem;
+    }
+  }
+</style>

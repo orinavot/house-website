@@ -1,0 +1,117 @@
+---
+/**
+ * Floating WhatsApp shortcut. Hidden at the top of the page (the hero already
+ * has a WhatsApp button); fades in once the visitor starts scrolling.
+ */
+import WhatsAppIcon from './icons/WhatsAppIcon.astro';
+import { getDictionary, type Locale } from '../i18n';
+import { site } from '../site';
+
+interface Props {
+  locale: Locale;
+}
+const t = getDictionary(Astro.props.locale);
+---
+
+<a
+  class="wa-float"
+  href={site.phone.whatsapp}
+  target="_blank"
+  rel="noopener"
+  aria-label={t.a11y.whatsappFloat}
+  data-wa-float
+>
+  <WhatsAppIcon size="1.5rem" />
+</a>
+
+<style>
+  .wa-float {
+    position: fixed;
+    right: max(var(--s-4), env(safe-area-inset-right));
+    bottom: max(var(--s-4), env(safe-area-inset-bottom));
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+    box-shadow: 0 6px 24px rgb(36 37 34 / 0.18);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(0.75rem);
+    transition:
+      opacity var(--t-base) var(--ease),
+      transform var(--t-base) var(--ease),
+      visibility 0s linear var(--t-base),
+      background-color var(--t-fast) var(--ease);
+  }
+  /* Thin ring: the hairline language, even here. */
+  .wa-float::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border: 1px solid var(--c-accent);
+    border-radius: 50%;
+    opacity: 0.6;
+    transition: inset var(--t-base) var(--ease);
+  }
+  .wa-float:hover {
+    background: var(--c-accent-hover);
+  }
+  .wa-float:hover::after {
+    inset: -8px;
+  }
+  .wa-float.is-shown {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+  @media (min-width: 64em) {
+    .wa-float {
+      right: var(--s-6);
+      bottom: var(--s-6);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wa-float {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLElement>('[data-wa-float]');
+  if (btn) {
+    let ticking = false;
+    // Hidden over the Contact section and the footer, which carry their own WhatsApp links.
+    const quiet = new Set<Element>();
+    const update = () => {
+      btn.classList.toggle('is-shown', window.scrollY > 40 && quiet.size === 0);
+      ticking = false;
+    };
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) e.isIntersecting ? quiet.add(e.target) : quiet.delete(e.target);
+          update();
+        },
+        { rootMargin: '0px 0px -15% 0px' },
+      );
+      document.querySelectorAll('#contact, footer').forEach((el) => io.observe(el));
+    }
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    update();
+  }
+</script>

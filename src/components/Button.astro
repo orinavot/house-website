@@ -1,0 +1,78 @@
+---
+/**
+ * The one button. `solid` = filled orange; `outline` = 1px frame that fills
+ * on hover. `icon="whatsapp"` swaps the trailing rule for the WhatsApp glyph.
+ */
+import type { HTMLAttributes } from 'astro/types';
+import WhatsAppIcon from './icons/WhatsAppIcon.astro';
+type Props = HTMLAttributes<'a'> & { variant?: 'solid' | 'outline'; icon?: 'whatsapp' };
+const { variant = 'solid', icon, class: className, ...attrs } = Astro.props;
+---
+
+<a class:list={['button', 'label', `button--${variant}`, { 'button--icon': icon }, className]} {...attrs}>
+  {icon === 'whatsapp' && <WhatsAppIcon size="1.05rem" class="button__icon" />}
+  <span><slot /></span>
+  {!icon && <span class="button__rule" aria-hidden="true" />}
+</a>
+
+<style>
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--s-4);
+    min-height: 3.25rem;
+    padding: 0 var(--s-6);
+    border: 1px solid var(--c-ink);
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+      background-color var(--t-base) var(--ease),
+      color var(--t-base) var(--ease),
+      border-color var(--t-base) var(--ease);
+  }
+  .button--icon {
+    gap: var(--s-3);
+  }
+  .button :global(.button__icon) {
+    flex-shrink: 0;
+    transition: transform var(--t-base) var(--ease);
+  }
+  .button:hover :global(.button__icon) {
+    transform: scale(1.08);
+  }
+  .button__rule {
+    display: block;
+    width: 1.25rem;
+    height: 1px;
+    background: currentColor;
+    transition: width var(--t-base) var(--ease);
+  }
+  .button:hover .button__rule,
+  .button:focus-visible .button__rule {
+    width: 2rem;
+  }
+  /* Primary: solid burnt orange, white text (6.1:1); deepens on hover. */
+  .button--solid {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    color: var(--c-accent-ink);
+  }
+  .button--solid:hover,
+  .button--solid:focus-visible {
+    background: var(--c-accent-hover);
+    border-color: var(--c-accent-hover);
+  }
+  /* Secondary: 1px ink frame; the stroke turns orange on hover. */
+  .button--outline {
+    background: transparent;
+    color: var(--c-ink);
+  }
+  .button--outline:hover,
+  .button--outline:focus-visible {
+    border-color: var(--c-accent);
+  }
+  .button--outline :global(.button__icon) {
+    color: var(--c-accent);
+  }
+</style>

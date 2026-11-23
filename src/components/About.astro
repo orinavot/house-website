@@ -1,0 +1,214 @@
+---
+/**
+ * About. Ori's About page text, word for word (no additions, no cuts).
+ * Like the hero, the opening sentence is split: a serif heading that ends at
+ * the founding year, continued in the paragraph below it.
+ * Two photographs: the terrace opposite the opening, the interior on the left
+ * beside the rest of the text.
+ */
+import Photo from './Photo.astro';
+import SectionLabel from './SectionLabel.astro';
+import Rule from './Rule.astro';
+import { getDictionary, type Locale } from '../i18n';
+import { keepThree } from '../lib/text';
+import image from '../assets/photos/about-sea-terrace.jpg';
+import secondImage from '../assets/photos/about-concrete-living.jpg';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = getDictionary(locale).about;
+---
+
+<section class="about section" id="about" aria-labelledby="about-heading">
+  <div class="container">
+    <Rule bleed from="right" class="about__rule" />
+
+    <div class="grid about__grid">
+      <div class="about__open">
+        <SectionLabel label={t.label} />
+        <h2 id="about-heading" class="about__heading serif" data-reveal>{keepThree(t.heading)}</h2>
+        <p class="about__continuation" data-reveal style="--reveal-delay:120ms">{keepThree(t.continuation)}</p>
+      </div>
+
+      <div class="about__media about__media--one">
+        <Photo
+          src={image}
+          alt={t.imageAlt}
+          ratio="4 / 5"
+          focus="62% 50%"
+          sizes="(min-width: 64em) 34vw, (min-width: 48em) 60vw, 92vw"
+          frame="br"
+        />
+      </div>
+
+      <!--
+        Phones: the second paragraph sits between the photos and holds still
+        (sticky) while the second photo slides up over it; scrolling back up
+        reveals it again. From tablet up this wrapper dissolves into the grid.
+      -->
+      <div class="about__stack">
+        <div class="about__rest" data-reveal>
+          <Rule tone="accent" from="left" class="about__rest-rule" />
+          <p>{keepThree(t.paragraphs[0])}</p>
+        </div>
+
+        <div class="about__media about__media--two">
+          <Photo
+            src={secondImage}
+            alt={t.secondImageAlt}
+            ratio="3 / 2"
+            focus="45% 50%"
+            sizes="(min-width: 64em) 52vw, 92vw"
+            frame="tl"
+          />
+        </div>
+      </div>
+
+      <div class="about__tail" data-reveal>
+        {t.paragraphs.slice(1).map((p) => <p>{keepThree(p)}</p>)}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about :global(.about__rule) {
+    margin-bottom: var(--s-7);
+  }
+  .about__grid {
+    row-gap: var(--s-7);
+  }
+  .about__open,
+  .about__media,
+  .about__stack,
+  .about__rest,
+  .about__tail {
+    grid-column: 1 / -1;
+  }
+  .about__heading {
+    margin-top: var(--s-5);
+    font-size: var(--fs-h2);
+    line-height: var(--lh-heading);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .about__continuation {
+    margin-top: var(--s-5);
+    font-size: var(--fs-body-l);
+    line-height: 1.65;
+    max-width: 34em;
+  }
+  .about__rest,
+  .about__tail {
+    display: grid;
+    gap: var(--s-4);
+    color: var(--c-ink-2);
+    max-width: 36em;
+  }
+
+  /* Phones: the second photo slides over the pinned paragraph. */
+  @media (max-width: 47.99em) {
+    .about__rest {
+      position: sticky;
+      top: calc(var(--header-h) + var(--notice-h, 0px) + var(--s-4));
+      z-index: 0;
+    }
+    .about__media--two {
+      position: relative;
+      z-index: 1;
+      margin-top: var(--s-7);
+      background: var(--c-bg);
+      /* Square on phones: always taller than the paragraph it covers. */
+      --ratio: 1 / 1;
+    }
+  }
+
+  @media (min-width: 48em) {
+    .about__stack {
+      display: contents;
+    }
+  }
+  .about__rest :global(.about__rest-rule) {
+    width: 3rem;
+    margin-bottom: var(--s-2);
+  }
+  .about__media--one {
+    padding: 0 0.75rem 0.75rem 0;
+    --ratio: 4 / 3;
+  }
+  .about__media--two {
+    padding: 0.75rem 0 0 0.75rem;
+  }
+
+  @media (min-width: 48em) {
+    .about__continuation {
+      margin-inline-start: calc((100% + var(--col-gap)) / 8);
+    }
+    .about__media--one {
+      grid-column: 3 / -1;
+      --ratio: 4 / 5;
+    }
+    .about__media--two {
+      grid-column: 1 / span 6;
+    }
+    .about__rest,
+    .about__tail {
+      grid-column: 3 / -1;
+    }
+  }
+
+  /* Phones and tablets: a shorter step down from Services. */
+  @media (max-width: 63.99em) {
+    .about {
+      padding-top: var(--s-6);
+    }
+  }
+
+  @media (min-width: 64em) {
+    .about {
+      padding-top: 0;
+    }
+    .about :global(.about__rule) {
+      margin-bottom: var(--s-7);
+    }
+    .about__grid {
+      row-gap: var(--s-9);
+    }
+    .about__open {
+      grid-column: 1 / span 6;
+      align-self: center;
+    }
+    .about__continuation {
+      margin-inline-start: calc((100% + var(--col-gap)) / 6);
+    }
+    .about__media--one {
+      grid-column: 8 / -1;
+      padding: 0 1.125rem 1.125rem 0;
+    }
+    /* Second row: the interior on the left, the rest of the story beside it. */
+    .about__media--two {
+      grid-column: 1 / span 7;
+      grid-row: 2 / span 2;
+      padding: 1.125rem 0 0 1.125rem;
+    }
+    .about__rest {
+      grid-column: 9 / -1;
+      grid-row: 2;
+      align-self: end;
+    }
+    /* Same column, directly under the paragraph above (cancels the row gap). */
+    .about__tail {
+      grid-column: 9 / -1;
+      grid-row: 3;
+      align-self: start;
+      margin-top: calc(var(--s-4) - var(--s-9));
+    }
+  }
+
+  :global(html[lang='fr']) .about__heading,
+  :global(html[lang='ru']) .about__heading {
+    font-size: clamp(1.75rem, 1.3rem + 1.6vw, 2.75rem);
+  }
+</style>

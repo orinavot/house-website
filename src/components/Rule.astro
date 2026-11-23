@@ -1,0 +1,21 @@
+---
+/**
+ * A 1px horizontal rule that draws itself in when it scrolls into view —
+ * from the left, the right, or from the centre outwards.
+ */
+interface Props {
+  from?: 'left' | 'right' | 'center';
+  tone?: 'stone' | 'strong' | 'accent';
+  bleed?: boolean;
+  delay?: number;
+  class?: string;
+}
+const { from = 'left', tone = 'stone', bleed = false, delay = 0, class: className } = Astro.props;
+const reveal = from === 'left' ? 'line' : `line-${from}`;
+---
+
+<span
+  class:list={['rule', tone !== 'stone' && `rule--${tone}`, { 'rule--bleed': bleed }, className]}
+  aria-hidden="true"
+  data-reveal={reveal}
+  style={delay ? `--reveal-delay:${delay}ms` : undefined}></span>

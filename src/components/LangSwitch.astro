@@ -1,0 +1,129 @@
+---
+/**
+ * EN / FR / RU — text codes, no flags. Each link points to the same page in
+ * the other language; a small script appends the current #anchor on click so
+ * the visitor stays exactly where they were.
+ */
+import { locales, localeMeta, switchLocalePath, getDictionary, type Locale } from '../i18n';
+
+interface Props {
+  locale: Locale;
+  variant?: 'compact' | 'full';
+  tone?: 'light' | 'dark';
+  /** Only one switcher per page should be a navigation landmark. */
+  landmark?: boolean;
+}
+const { locale, variant = 'compact', tone = 'light', landmark = true } = Astro.props;
+const Wrapper = landmark ? 'nav' : 'div';
+const t = getDictionary(locale);
+const pathname = Astro.url.pathname;
+---
+
+<Wrapper
+  class:list={['lang', `lang--${variant}`, `lang--${tone}`]}
+  aria-label={t.a11y.language}
+  role={landmark ? undefined : 'group'}
+>
+  <ul role="list">
+    {
+      locales.map((l) => {
+        const meta = localeMeta[l];
+        const current = l === locale;
+        return (
+          <li>
+            <a
+              href={switchLocalePath(pathname, l)}
+              hreflang={meta.htmlLang}
+              lang={meta.htmlLang}
+              aria-current={current ? 'true' : undefined}
+              data-lang-link
+            >
+              {variant === 'full' ? meta.native : <span aria-hidden="true">{meta.short}</span>}
+              {variant === 'compact' && <span class="visually-hidden">{meta.native}</span>}
+              {current && <span class="visually-hidden">({t.a11y.currentLanguage})</span>}
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</Wrapper>
+
+<style>
+  .lang ul {
+    display: flex;
+    align-items: center;
+    margin: 0;
+  }
+  .lang li {
+    display: flex;
+    align-items: center;
+  }
+  .lang a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem; /* 44px touch target */
+    color: var(--c-ink-2);
+    transition: color var(--t-fast) var(--ease);
+  }
+  .lang a:hover,
+  .lang a[aria-current] {
+    color: var(--c-ink);
+  }
+  /* Underline drawn under the active language. */
+  .lang a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.7rem;
+    height: 1px;
+    background: var(--c-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--t-base) var(--ease);
+  }
+  .lang a[aria-current]::after,
+  .lang a:hover::after {
+    transform: scaleX(1);
+  }
+  .lang a:hover:not([aria-current])::after {
+    opacity: 0.5;
+  }
+
+  /* compact: EN / FR / RU */
+  .lang--compact {
+    font-size: var(--fs-label);
+    font-weight: 500;
+    letter-spacing: var(--tracking-nav);
+  }
+  .lang--compact li + li::before {
+    content: '/';
+    padding-inline: 0.55em;
+    color: var(--c-stone);
+  }
+
+  /* full: English  Français  Русский */
+  .lang--full ul {
+    gap: var(--s-5);
+    flex-wrap: wrap;
+  }
+  .lang--full a {
+    font-size: var(--fs-body);
+  }
+
+  .lang--dark a {
+    color: var(--c-accent-soft);
+  }
+  .lang--dark a:hover,
+  .lang--dark a[aria-current] {
+    color: var(--c-white);
+  }
+  .lang--dark a::after {
+    background: var(--c-white);
+  }
+  .lang--dark.lang--compact li + li::before {
+    color: rgb(255 255 255 / 0.35);
+  }
+</style>

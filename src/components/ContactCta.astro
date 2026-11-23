@@ -1,0 +1,129 @@
+---
+/** 03 — Contact. A quiet close on cream: direct details and one WhatsApp button. */
+import Button from './Button.astro';
+import Rule from './Rule.astro';
+import { getDictionary, type Locale } from '../i18n';
+import { site } from '../site';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = getDictionary(locale).contact;
+---
+
+<section class="contact section" id="contact" aria-labelledby="contact-heading">
+  <div class="container grid contact__grid">
+    <div class="contact__head">
+      <h2 id="contact-heading" class="contact__heading serif" data-reveal>{t.heading}</h2>
+    </div>
+
+    <div class="contact__details" data-reveal style="--reveal-delay:200ms">
+      <Rule tone="strong" from="center" />
+      <dl class="contact__list">
+        <div class="contact__row">
+          <dt class="label">{t.phoneLabel}</dt>
+          <dd>
+            <a href={`tel:${site.phone.tel}`} class="contact__value">{site.phone.display}</a>
+          </dd>
+        </div>
+        <div class="contact__row">
+          <dt class="label">{t.emailLabel}</dt>
+          <dd>
+            <a href={`mailto:${site.email}`} class="contact__value">{site.email}</a>
+          </dd>
+        </div>
+      </dl>
+      <Button
+        href={site.phone.whatsapp}
+        variant="solid"
+        icon="whatsapp"
+        class="contact__button"
+        target="_blank"
+        rel="noopener">{t.whatsapp}</Button
+      >
+    </div>
+  </div>
+</section>
+
+<style>
+  .contact {
+    background: var(--c-cream);
+  }
+  .contact__grid {
+    row-gap: var(--s-8);
+  }
+  .contact__head,
+  .contact__details {
+    grid-column: 1 / -1;
+  }
+  .contact__heading {
+    font-size: clamp(2.5rem, 1.5rem + 4vw, 5rem);
+    line-height: 1.04;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    max-width: 11ch;
+  }
+  .contact__row {
+    display: grid;
+    gap: var(--s-1);
+    padding-block: var(--s-5);
+    border-bottom: 1px solid rgb(36 37 34 / 0.22);
+  }
+  .contact__row dt {
+    color: var(--c-ink);
+    opacity: 0.85;
+  }
+  .contact__value {
+    font-family: var(--font-serif);
+    font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.625rem);
+    font-weight: 300;
+    background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+    transition: background-size var(--t-base) var(--ease);
+    overflow-wrap: anywhere;
+  }
+  .contact__value:hover,
+  .contact__value:focus-visible {
+    background-size: 100% 1px;
+  }
+  .contact__details :global(.contact__button) {
+    margin-top: var(--s-7);
+  }
+
+  /* Phones: an airy close (Aviv, round 5: a quarter longer than round 4). */
+  @media (max-width: 47.99em) {
+    .contact {
+      padding-block: var(--s-9);
+    }
+    .contact__grid {
+      row-gap: var(--s-8);
+    }
+    .contact__heading {
+      max-width: none;
+      font-size: clamp(2.25rem, 1.6rem + 3vw, 2.75rem);
+    }
+    .contact__row {
+      padding-block: var(--s-5);
+    }
+    .contact__details :global(.contact__button) {
+      margin-top: var(--s-6);
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 64em) {
+    .contact__grid {
+      align-items: start;
+    }
+    .contact__details {
+      padding-top: 0.75rem;
+    }
+    .contact__head {
+      grid-column: 1 / span 7;
+    }
+    /* Drawn in from the right edge by one column. */
+    .contact__details {
+      grid-column: 8 / span 4;
+    }
+  }
+</style>

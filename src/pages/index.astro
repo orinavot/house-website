@@ -1,0 +1,26 @@
+---
+/**
+ * Root: send visitors to their language (fr/ru from the browser, else English).
+ * Static hosting fallback is a meta refresh to /en/. Server-side 301s from the
+ * old PHP URLs are listed in README.md and belong in the hosting config.
+ */
+import { locales, defaultLocale } from '../i18n';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HOUSE Personal Property Management</title>
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={new URL(`/${defaultLocale}/`, Astro.site).href} />
+    <meta http-equiv="refresh" content={`0; url=/${defaultLocale}/`} />
+    <script is:inline define:vars={{ locales, defaultLocale }}>
+      const pref = (navigator.languages || [navigator.language]).map((l) => l.slice(0, 2).toLowerCase());
+      const match = pref.find((l) => locales.includes(l)) || defaultLocale;
+      location.replace('/' + match + '/');
+    </script>
+  </head>
+  <body style="background:#f5f4f0"></body>
+</html>

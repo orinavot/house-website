@@ -1,0 +1,310 @@
+---
+/**
+ * 01 — Services. The four original categories as an accordion: each title has
+ * a plus that opens the original list, word for word. No summaries.
+ * Without JavaScript every list is simply open.
+ */
+import Photo from './Photo.astro';
+import SectionLabel from './SectionLabel.astro';
+import Rule from './Rule.astro';
+import { keepThree } from '../lib/text';
+import { getDictionary, serviceAnchors, type Locale, type ServiceKey } from '../i18n';
+import image from '../assets/photos/services-olive-hall.jpg';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const dict = getDictionary(locale);
+const t = dict.services;
+const order: ServiceKey[] = ['maintenance', 'repairs', 'previsit', 'accounting'];
+---
+
+<section class="services section" id="services" aria-labelledby="services-label">
+  <div class="container">
+    <Rule bleed from="left" />
+  </div>
+  <div class="container grid services__grid">
+    <div class="services__head">
+      <SectionLabel label={t.label} as="h2" id="services-label" />
+    </div>
+
+    <div class="services__media">
+      <Photo
+        src={image}
+        alt={t.imageAlt}
+        ratio="3 / 4"
+        focus="42% 50%"
+        sizes="(min-width: 64em) 30vw, (min-width: 48em) 50vw, 92vw"
+        frame="tr"
+      />
+    </div>
+
+    <div class="services__list">
+    <Rule tone="strong" from="right" delay={200} />
+    <ol class="services__ol" role="list" data-accordion>
+      {
+        order.map((key, i) => {
+          const item = t.items[key];
+          const id = serviceAnchors[key];
+          return (
+            <li class="service" id={id} data-reveal style={`--reveal-delay:${i * 80}ms`}>
+              <h3 class="service__heading">
+                <button
+                  class="service__toggle"
+                  type="button"
+                  aria-expanded="true"
+                  aria-controls={`${id}-panel`}
+                  id={`${id}-button`}
+                  data-accordion-toggle
+                >
+                  <span class="service__index label" aria-hidden="true">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <span class="service__title">{item.title}</span>
+                  <span class="service__plus" aria-hidden="true" />
+                </button>
+              </h3>
+              <div
+                class="service__panel"
+                id={`${id}-panel`}
+                role="region"
+                aria-labelledby={`${id}-button`}
+                data-accordion-panel
+              >
+                <div class="service__panel-inner">
+                  <ul class="service__items" role="list">
+                    {item.list.map((line) => (
+                      <li>{keepThree(line)}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <span class="service__hover-rule" aria-hidden="true" />
+            </li>
+          );
+        })
+      }
+    </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  .services {
+    padding-top: 0;
+    /* Tighter step into About (Aviv, round 5). */
+    padding-bottom: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+  }
+  .services__grid {
+    row-gap: var(--s-7);
+    padding-top: var(--s-7);
+  }
+  .services__head,
+  .services__list,
+  .services__media {
+    grid-column: 1 / -1;
+  }
+  .services__media {
+    order: 3;
+    padding: 0.75rem 0.75rem 0 0; /* room for the top-right frame */
+    --ratio: 4 / 3;
+  }
+
+  .service {
+    position: relative;
+    border-bottom: var(--line);
+  }
+  .service__heading {
+    font: inherit;
+  }
+  .service__toggle {
+    display: grid;
+    grid-template-columns: 2.75rem 1fr 1.5rem;
+    align-items: baseline;
+    column-gap: var(--s-4);
+    width: 100%;
+    padding-block: var(--s-6);
+    text-align: start;
+  }
+  .service__index {
+    color: var(--c-accent);
+    font-feature-settings: 'tnum' 1, 'lnum' 1;
+  }
+  .service__title {
+    font-family: var(--font-sans);
+    font-size: clamp(0.9375rem, 0.85rem + 0.35vw, 1.125rem);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1.45;
+    transition: transform var(--t-base) var(--ease);
+  }
+
+  /* Plus drawn with two 1px strokes; the vertical one folds away when open. */
+  .service__plus {
+    position: relative;
+    align-self: center;
+    justify-self: end;
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  .service__plus::before,
+  .service__plus::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    background: var(--c-accent);
+    transition: transform var(--t-base) var(--ease);
+  }
+  .service__plus::after {
+    transform: rotate(90deg);
+  }
+  .service__toggle[aria-expanded='true'] .service__plus::after {
+    transform: rotate(0deg);
+  }
+
+  /* Smooth height animation via grid rows (0fr ↔ 1fr). */
+  .service__panel {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 560ms var(--ease);
+  }
+  .service__panel-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .service__panel[data-closed] {
+    grid-template-rows: 0fr;
+  }
+  .service__items {
+    display: grid;
+    padding: 0 0 var(--s-6) calc(2.75rem + var(--s-4));
+    color: var(--c-ink-2);
+    transition: opacity 480ms var(--ease);
+  }
+  .service__panel[data-closed] .service__items {
+    opacity: 0;
+  }
+  .service__items li {
+    position: relative;
+    padding: var(--s-3) 0 var(--s-3) var(--s-5);
+    border-top: var(--line);
+  }
+  .service__items li:first-child {
+    border-top: 0;
+  }
+  /* Short drafting tick in place of a bullet. */
+  .service__items li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: calc(var(--s-3) + 0.85em);
+    width: 0.75rem;
+    height: 1px;
+    background: var(--c-smoked);
+  }
+
+  /* A rule that draws across the row on hover, over the stone divider. */
+  .service__hover-rule {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: var(--c-ink);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 700ms var(--ease);
+    pointer-events: none;
+  }
+  .service:hover .service__hover-rule,
+  .service:focus-within .service__hover-rule {
+    transform: scaleX(1);
+  }
+
+  @media (min-width: 48em) {
+    .service__toggle {
+      grid-template-columns: 4rem 1fr 2rem;
+    }
+    .service__items {
+      padding-left: calc(4rem + var(--s-4));
+      padding-right: 2rem;
+    }
+    .service__toggle:hover .service__title {
+      transform: translateX(0.375rem);
+    }
+    .services__media {
+      --ratio: 3 / 4;
+      width: 60%;
+    }
+  }
+
+  @media (min-width: 64em) {
+    .services__head {
+      grid-column: 1 / -1;
+    }
+    .services__media {
+      order: 0;
+      grid-column: 1 / span 4;
+      grid-row: 2;
+      width: 100%;
+      align-self: start;
+      position: sticky;
+      top: calc(var(--header-h) + var(--s-7));
+      padding: 1.125rem 1.125rem 0 0;
+    }
+    .services__list {
+      grid-column: 6 / -1;
+      grid-row: 2;
+    }
+    .service__toggle {
+      padding-block: var(--s-7);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .service__panel,
+    .service__items {
+      transition: none;
+    }
+    .service__toggle:hover .service__title {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  // Progressive enhancement: lists start open in the HTML; JS closes them and wires the toggles.
+  document.querySelectorAll<HTMLElement>('[data-accordion]').forEach((list) => {
+    const toggles = list.querySelectorAll<HTMLButtonElement>('[data-accordion-toggle]');
+    let anchorTimer = 0;
+    const set = (btn: HTMLButtonElement, open: boolean) => {
+      const panel = document.getElementById(btn.getAttribute('aria-controls')!);
+      if (!panel) return;
+      // The list opens downwards: switch off the browser's scroll anchoring
+      // while the panel grows, or the page scrolls and the row jumps up.
+      document.body.style.overflowAnchor = 'none';
+      clearTimeout(anchorTimer);
+      anchorTimer = window.setTimeout(() => (document.body.style.overflowAnchor = ''), 800);
+      btn.setAttribute('aria-expanded', String(open));
+      panel.toggleAttribute('data-closed', !open);
+      panel.toggleAttribute('inert', !open);
+    };
+    toggles.forEach((btn) => {
+      set(btn, false);
+      btn.addEventListener('click', () => set(btn, btn.getAttribute('aria-expanded') !== 'true'));
+    });
+    // Arriving on #maintenance (etc.) opens that category.
+    const open = () => {
+      const target = location.hash ? list.querySelector<HTMLElement>(location.hash) : null;
+      const btn = target?.querySelector<HTMLButtonElement>('[data-accordion-toggle]');
+      if (btn) set(btn, true);
+    };
+    open();
+    window.addEventListener('hashchange', open);
+  });
+</script>

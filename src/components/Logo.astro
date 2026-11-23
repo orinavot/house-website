@@ -1,0 +1,37 @@
+---
+/**
+ * The client's original HOUSE logo, vectorised from Ori's business card
+ * (ori-assets-2026-11-23), recoloured to v1.4 charcoal. Inline so it can be
+ * reversed with CSS: `color` drives the ink, --logo-paper the knock-outs.
+ */
+import logo from '../assets/logo/house-logo.svg?raw';
+
+interface Props {
+  tone?: 'ink' | 'reversed';
+  class?: string;
+}
+const { tone = 'ink', class: className } = Astro.props;
+---
+
+<span class:list={['logo', `logo--${tone}`, className]} aria-hidden="true" set:html={logo} />
+
+<style>
+  .logo {
+    display: block;
+    aspect-ratio: 221 / 59;
+    line-height: 0;
+  }
+  .logo :global(svg) {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .logo--ink {
+    color: var(--c-ink);
+    --logo-paper: var(--c-bg);
+  }
+  .logo--reversed {
+    color: var(--c-white);
+    --logo-paper: var(--logo-ground, var(--c-ink));
+  }
+</style>

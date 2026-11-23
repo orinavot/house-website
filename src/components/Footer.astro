@@ -1,0 +1,215 @@
+---
+import Logo from './Logo.astro';
+import LangSwitch from './LangSwitch.astro';
+import { getDictionary, localizedPath, sectionHref, type Locale } from '../i18n';
+import { site } from '../site';
+import { keepThree } from '../lib/text';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+const f = t.footer;
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container">
+    <div class="grid footer__top">
+      <div class="footer__brand">
+        <a href={localizedPath(locale)} class="footer__logo" aria-label={t.a11y.homeLink}>
+          <Logo tone="reversed" />
+        </a>
+        <p class="footer__tagline label">{f.tagline}</p>
+      </div>
+
+      <div class="footer__col footer__place">
+        <p class="footer__heading label">{f.location}</p>
+        <p class="footer__soft">{keepThree(f.areas)}</p>
+        <p class="footer__soft">{keepThree(f.areasNote)}</p>
+      </div>
+
+      <div class="footer__col">
+        <p class="footer__heading label">{f.contactHeading}</p>
+        <ul role="list" class="footer__links">
+          <li><a href={`tel:${site.phone.tel}`}>{site.phone.display}</a></li>
+          <li><a href={site.phone.whatsapp} rel="noopener">WhatsApp</a></li>
+          <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+        </ul>
+      </div>
+
+      <nav class="footer__col" aria-label={t.a11y.footerNav}>
+        <p class="footer__heading label">{f.navHeading}</p>
+        <ul role="list" class="footer__links">
+          <li><a href={sectionHref(locale, 'services')}>{t.nav.services}</a></li>
+          <li><a href={sectionHref(locale, 'about')}>{t.nav.about}</a></li>
+          <li><a href={sectionHref(locale, 'contact')}>{t.nav.contact}</a></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="footer__bottom">
+      <p class="footer__legal">
+        © {year} {site.name}. {f.rights} <span class="footer__imagery">{f.imagery}</span>
+      </p>
+      <LangSwitch locale={locale} tone="dark" landmark={false} />
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    /* Burnt-orange ground (the accent). White on it 6.1:1, peach 4.6:1. */
+    background: var(--c-accent);
+    color: var(--c-white);
+    --logo-ground: var(--c-accent);
+    padding-top: var(--s-9);
+    font-size: var(--fs-small);
+  }
+  .footer a {
+    transition: color var(--t-fast) var(--ease);
+  }
+  .footer__top {
+    row-gap: var(--s-7);
+    padding-bottom: var(--s-8);
+  }
+  .footer__brand,
+  .footer__col {
+    grid-column: 1 / -1;
+  }
+  .footer__logo {
+    display: block;
+    width: 11.5rem;
+  }
+  .footer__tagline {
+    margin-top: var(--s-5);
+    color: var(--c-accent-soft);
+  }
+  .footer__heading {
+    padding-bottom: var(--s-3);
+    margin-bottom: var(--s-4);
+    border-bottom: 1px solid rgb(255 255 255 / 0.28);
+  }
+  .footer__soft {
+    color: var(--c-accent-soft);
+    max-width: 28em;
+  }
+  .footer__soft + .footer__soft {
+    margin-top: var(--s-3);
+  }
+  .footer__links {
+    display: grid;
+    gap: var(--s-2);
+  }
+  .footer__links a {
+    background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+    transition: background-size var(--t-base) var(--ease);
+    overflow-wrap: anywhere;
+  }
+  .footer__links a:hover,
+  .footer__links a:focus-visible {
+    background-size: 100% 1px;
+  }
+  .footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding-block: var(--s-4) var(--s-5);
+    border-top: 1px solid rgb(255 255 255 / 0.28);
+    color: var(--c-accent-soft);
+  }
+  .footer__legal {
+    font-size: 0.75rem;
+  }
+
+  /*
+   * Phones: half the length. Contact and Pages sit side by side, the areas
+   * run full width under them, the tagline (it repeats the logo) is dropped.
+   */
+  @media (max-width: 47.99em) {
+    .footer {
+      padding-top: var(--s-6);
+    }
+    /* The language switch moves up beside the logo. */
+    .footer > .container {
+      position: relative;
+    }
+    .footer__bottom :global(.lang) {
+      position: absolute;
+      top: 0.1rem;
+      right: var(--gutter);
+    }
+    .footer__top {
+      grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+      row-gap: var(--s-6);
+      padding-bottom: var(--s-6);
+    }
+    .footer__logo {
+      width: 9.5rem;
+    }
+    .footer__tagline {
+      display: none;
+    }
+    .footer__brand,
+    .footer__place {
+      grid-column: 1 / -1;
+    }
+    .footer__place {
+      order: 3;
+    }
+    .footer__col:not(.footer__place) {
+      grid-column: auto;
+    }
+    .footer__heading {
+      padding-bottom: var(--s-2);
+      margin-bottom: var(--s-3);
+    }
+    .footer__links {
+      gap: var(--s-1);
+    }
+    .footer__soft + .footer__soft {
+      margin-top: var(--s-1);
+    }
+    .footer__bottom {
+      padding-block: var(--s-3) var(--s-4);
+      gap: var(--s-2);
+    }
+    .footer__legal {
+      font-size: 0.6875rem;
+      padding-right: 4rem; /* clear of the floating WhatsApp button */
+    }
+  }
+
+  @media (min-width: 48em) {
+    .footer__brand {
+      grid-column: 1 / -1;
+    }
+    .footer__col {
+      grid-column: span 3;
+    }
+    .footer__place {
+      grid-column: 1 / span 4;
+    }
+  }
+
+  @media (min-width: 64em) {
+    .footer__brand {
+      grid-column: 1 / span 4;
+    }
+    .footer__place {
+      grid-column: 5 / span 3;
+    }
+    .footer__col {
+      grid-column: span 2;
+    }
+    .footer__col:last-child {
+      grid-column: 11 / -1;
+    }
+    .footer__col:nth-child(3) {
+      grid-column: 8 / span 3;
+    }
+  }
+</style>

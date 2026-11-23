@@ -1,0 +1,338 @@
+---
+/**
+ * Hero. On desktop the whole composition fits the first screen: the photo's
+ * height is tied to the viewport, the type scales with it.
+ * The H1 ("HOUSE" / the rest) and the paragraph are one sentence — Ori's
+ * original opening, verbatim. The paragraph steps in by one column and a
+ * hairline bridges the step.
+ */
+import Photo from './Photo.astro';
+import Button from './Button.astro';
+import { getDictionary, sectionHref, type Locale } from '../i18n';
+import { site } from '../site';
+import { keepThreeParts } from '../lib/text';
+import heroImage from '../assets/photos/hero-sea-view-living.jpg';
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+const [before, emphasis, after] = keepThreeParts([
+  t.hero.continuation.before,
+  t.hero.continuation.emphasis,
+  t.hero.continuation.after,
+]);
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container grid hero__grid">
+    <div class="hero__text">
+      <h1 id="hero-title" class="hero__title serif">
+        <span class="hero__title-lead hero-in" style="--d:80ms">{t.hero.title.lead}</span>
+        <span class="hero__title-rest hero-in" style="--d:220ms">{t.hero.title.rest}</span>
+      </h1>
+
+      <div class="hero__continuation hero-in" style="--d:420ms">
+        <span class="hero__joint" aria-hidden="true"></span>
+        <p class="hero__lede">
+          {before}<em>{emphasis}</em>{after}
+        </p>
+        <p class="hero__meta label">{t.hero.meta}</p>
+      </div>
+
+      <div class="hero__actions hero-in" style="--d:600ms">
+        <Button href={sectionHref(locale, 'contact')} variant="solid">{t.hero.cta}</Button>
+        <Button href={site.phone.whatsapp} variant="outline" icon="whatsapp" target="_blank" rel="noopener">
+          {t.hero.whatsapp}
+        </Button>
+      </div>
+    </div>
+
+    <div class="hero__media">
+      <Photo
+        src={heroImage}
+        alt={t.hero.imageAlt}
+        ratio="4 / 3"
+        sizes="(min-width: 64em) 48vw, (min-width: 48em) 76vw, 92vw"
+        priority
+        frame="bl"
+      />
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding-block: var(--s-6) var(--s-8);
+  }
+
+  .hero__grid {
+    row-gap: var(--s-7);
+  }
+
+  .hero__text {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero__title {
+    font-size: clamp(2.5rem, 1.5rem + 3.4vw, 4.5rem);
+    line-height: var(--lh-tight);
+    letter-spacing: -0.015em;
+    font-weight: 300;
+  }
+  .hero__title-lead,
+  .hero__title-rest {
+    display: block;
+  }
+  /*
+   * "HOUSE" is set larger so its right edge lands on the end of the
+   * P of "Property" below it (measured ratio, see --lead-scale per language),
+   * and sits 10px higher than the plain line spacing (Aviv, round 3).
+   */
+  .hero__title-lead {
+    font-size: calc(1em * var(--lead-scale, 1));
+    line-height: 0.98;
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+  }
+  .hero__title-rest {
+    text-wrap: balance;
+    max-width: 16ch;
+  }
+
+  .hero__continuation {
+    position: relative;
+    margin-top: var(--s-5);
+  }
+
+  /* The continuation is set in the sans for clarity; the quoted phrase keeps its accent. */
+  .hero__lede {
+    font-family: var(--font-sans);
+    font-size: clamp(1.0625rem, 0.95rem + 0.4vw, 1.25rem);
+    line-height: 1.6;
+    font-weight: 400;
+    color: var(--c-ink);
+    max-width: 33ch;
+    text-wrap: pretty;
+  }
+  .hero__lede em {
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  .hero__meta {
+    margin-top: var(--s-4);
+    color: var(--c-ink-2);
+  }
+
+  .hero__joint {
+    display: none;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--s-3);
+    margin-top: var(--s-6);
+  }
+
+  /* Phones: the two buttons share one row. */
+  @media (max-width: 47.99em) {
+    .hero__actions > :global(.button) {
+      flex: 1 1 auto;
+      padding-inline: var(--s-4);
+      gap: var(--s-3);
+    }
+    .hero__actions :global(.button__rule) {
+      display: none;
+    }
+  }
+
+  .hero__media {
+    grid-column: 1 / -1;
+    padding: 0 0 0.75rem 0.75rem; /* room for the bottom-left frame */
+  }
+
+  /* Phones: compact type and buttons so the whole photo fits the first screen. */
+  @media (max-width: 47.99em) {
+    .hero {
+      padding-block: var(--s-2) var(--s-7);
+    }
+    .hero__grid {
+      row-gap: var(--s-4);
+    }
+    .hero__title {
+      font-size: clamp(1.75rem, 1.2rem + 2.6vw, 2.25rem);
+    }
+    .hero__title-lead {
+      margin-bottom: 6px;
+    }
+    .hero__title-rest {
+      max-width: none;
+    }
+    .hero__continuation {
+      margin-top: var(--s-3);
+    }
+    .hero__lede {
+      font-size: 0.9375rem;
+      line-height: 1.5;
+    }
+    .hero__meta {
+      margin-top: var(--s-2);
+    }
+    .hero__actions {
+      margin-top: var(--s-6);
+      gap: var(--s-2);
+    }
+    .hero__actions > :global(.button) {
+      min-height: 2.75rem;
+    }
+    .hero__media {
+      padding: 0 0 0.5rem 0.5rem;
+    }
+  }
+
+  @media (min-width: 48em) {
+    .hero__media {
+      grid-column: 2 / -1;
+    }
+  }
+
+  /*
+   * Desktop: 6 / 6 split that fits the first screen.
+   * --hero-h is the space left under the header; the photo takes its height
+   * from it and its width from the 4:5 ratio.
+   */
+  @media (min-width: 64em) {
+    .hero {
+      --hero-pad: clamp(1.5rem, 4vh, 3rem);
+      --hero-h: calc(100svh - var(--header-h) - var(--notice-h, 0px) - 2 * var(--hero-pad));
+      padding-block: var(--hero-pad);
+      min-height: calc(100svh - var(--header-h) - var(--notice-h, 0px));
+      /* Centre the composition in the first screen. */
+      display: grid;
+      align-content: center;
+    }
+    .hero__grid {
+      align-items: center;
+    }
+    .hero__text {
+      grid-column: 1 / span 6;
+    }
+    .hero__title {
+      font-size: clamp(2.5rem, min(4.6vw, 8.2vh), 4.75rem);
+    }
+    .hero__continuation {
+      margin-top: clamp(1rem, 3vh, 2rem);
+      padding-inline-start: calc((100% + var(--col-gap)) / 6);
+    }
+    .hero__joint {
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 0.8em;
+      width: calc((100% + var(--col-gap)) / 6 - var(--s-4));
+      height: 1px;
+      background: var(--c-ink);
+      font-size: clamp(1.0625rem, 0.95rem + 0.4vw, 1.25rem);
+    }
+    .hero__actions {
+      margin-top: clamp(1.25rem, 4vh, 2.5rem);
+      padding-inline-start: calc((100% + var(--col-gap)) / 6);
+    }
+    /* The whole photograph (4:3, uncropped), as wide as the first screen's
+       height allows, with at least one column of air before the text. */
+    .hero__media {
+      grid-column: 7 / -1;
+      justify-self: end;
+      width: min(100%, calc((var(--hero-h) - 1.125rem) * 4 / 3 + 1.125rem));
+      padding: 0 0 1.125rem 1.125rem;
+    }
+  }
+
+  :global(html[lang='en']) .hero__title,
+  :global(html[lang='fr']) .hero__title {
+    --lead-scale: 1.443;
+  }
+
+  /* ---------- Entrance (first paint) ---------- */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .hero-in {
+      animation: hero-rise 1300ms var(--ease) both;
+      animation-delay: var(--d, 0ms);
+    }
+    :global(.js) .hero__joint {
+      transform-origin: left center;
+      animation: hero-draw 1100ms var(--ease) both;
+      animation-delay: 900ms;
+    }
+    :global(.js) .hero__media :global(.photo__crop) {
+      animation: hero-unveil 1500ms cubic-bezier(0.65, 0, 0.35, 1) both;
+      animation-delay: 150ms;
+    }
+    :global(.js) .hero__media :global(.photo__crop img) {
+      animation: hero-settle 2200ms var(--ease) both;
+      animation-delay: 150ms;
+    }
+    :global(.js) .hero__media :global(.photo--frame)::before {
+      animation: hero-fade 900ms var(--ease) both;
+      animation-delay: 1200ms;
+    }
+  }
+  @keyframes hero-rise {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+  }
+  @keyframes hero-draw {
+    from {
+      transform: scaleX(0);
+    }
+  }
+  @keyframes hero-unveil {
+    from {
+      clip-path: inset(100% 0 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+  @keyframes hero-settle {
+    from {
+      transform: scale(1.12);
+    }
+  }
+  @keyframes hero-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* Long titles need a smaller step so the composition holds. */
+  :global(html[lang='ru']) .hero__title {
+    font-size: clamp(2rem, 1.2rem + 2.4vw, 3.25rem);
+  }
+  :global(html[lang='ru']) .hero__title-rest {
+    max-width: 20ch;
+  }
+  @media (max-width: 47.99em) {
+    :global(html[lang='ru']) .hero__title {
+      font-size: clamp(1.5rem, 1.1rem + 1.8vw, 1.875rem);
+    }
+    :global(html[lang='ru']) .hero__title-rest {
+      max-width: none;
+    }
+  }
+  @media (min-width: 64em) {
+    :global(html[lang='ru']) .hero__title {
+      font-size: clamp(2rem, min(3.3vw, 6vh), 3.5rem);
+    }
+    :global(html[lang='fr']) .hero__title {
+      font-size: clamp(2.5rem, min(4.2vw, 7.6vh), 4.25rem);
+    }
+  }
+</style>

@@ -1,0 +1,219 @@
+---
+/**
+ * Document shell: language, SEO (title, description, canonical, hreflang,
+ * Open Graph, JSON-LD), self-hosted fonts and the small global scripts.
+ */
+import '@fontsource/noto-serif-display/300.css';
+import '@fontsource/noto-serif-display/400.css';
+import '@fontsource/noto-serif-display/400-italic.css';
+import '@fontsource/montserrat/400.css';
+import '@fontsource/montserrat/500.css';
+import '@fontsource/montserrat/600.css';
+import '@fontsource/montserrat/500-italic.css';
+import '@fontsource/raleway/500.css';
+import 'lenis/dist/lenis.css';
+import '../styles/global.css';
+
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { getImage } from 'astro:assets';
+import { locales, localeMeta, switchLocalePath, getDictionary, defaultLocale, type Locale } from '../i18n';
+import { site } from '../site';
+import ogSource from '../assets/photos/hero-sea-view-living.jpg';
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+}
+const { locale, title, description } = Astro.props;
+const t = getDictionary(locale);
+const meta = localeMeta[locale];
+const path = Astro.url.pathname;
+const canonical = new URL(path, Astro.site);
+const alternates = locales.map((l) => ({
+  hreflang: localeMeta[l].htmlLang,
+  href: new URL(switchLocalePath(path, l), Astro.site).href,
+}));
+const xDefault = new URL(switchLocalePath(path, defaultLocale), Astro.site).href;
+const og = await getImage({ src: ogSource, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: site.name,
+  url: new URL(`/${locale}/`, Astro.site).href,
+  email: site.email,
+  telephone: site.phone.tel,
+  foundingDate: String(site.founded),
+  founder: { '@type': 'Person', name: site.founder },
+  areaServed: 'Tel Aviv',
+  address: { '@type': 'PostalAddress', addressLocality: site.locality, addressCountry: site.country },
+  availableLanguage: ['en', 'he'],
+};
+---
+
+<!doctype html>
+<html lang={meta.htmlLang} dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
+    <link rel="alternate" hreflang="x-default" href={xDefault} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:locale" content={meta.ogLocale} />
+    {
+      locales
+        .filter((l) => l !== locale)
+        .map((l) => <meta property="og:locale:alternate" content={localeMeta[l].ogLocale} />)
+    }
+    <meta property="og:image" content={new URL(og.src, Astro.site).href} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#f5f4f0" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body class:list={{ 'has-draft': meta.status === 'draft' && t.draftNotice }}>
+    <a class="skip-link" href="#main">{t.a11y.skip}</a>
+    {
+      meta.status === 'draft' && t.draftNotice && (
+        <aside class="draft-notice label" aria-label={t.draftNotice}>
+          {t.draftNotice}
+        </aside>
+      )
+    }
+    <Header locale={locale} />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+
+    <script>
+      // Smooth, eased "floating" scroll (Lenis, ~4 kB). Wheel only: touch keeps
+      // the platform's native scrolling. Off entirely under reduced motion.
+      import Lenis from 'lenis';
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let lenis: Lenis | null = null;
+      if (!reduce.matches) {
+        lenis = new Lenis({
+          // Frame-rate independent lerp: follows the wheel immediately and
+          // glides out, instead of a fixed-duration tween that feels delayed.
+          lerp: 0.12,
+          wheelMultiplier: 1,
+          smoothWheel: true,
+        });
+        const raf = (time: number) => {
+          lenis!.raf(time);
+          requestAnimationFrame(raf);
+        };
+        requestAnimationFrame(raf);
+        // Pause while the mobile menu is open.
+        new MutationObserver(() => {
+          document.documentElement.style.overflow === 'hidden' ? lenis!.stop() : lenis!.start();
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
+      }
+
+      // The page always opens at the hero. The browser must not restore an old
+      // scroll position, and only an address that names a section (#contact)
+      // may open further down.
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      const headerOffset = () => (document.querySelector('[data-header]')?.getBoundingClientRect().height ?? 0) + 8;
+      const scrollToTarget = (target: HTMLElement | 0, smooth: boolean) => {
+        const top = target === 0 ? 0 : target.getBoundingClientRect().top + window.scrollY - headerOffset();
+        if (lenis && smooth) lenis.scrollTo(top);
+        else {
+          lenis?.scrollTo(top, { immediate: true });
+          window.scrollTo({ top, behavior: 'instant' });
+        }
+      };
+      const sectionFromHash = (hash: string) =>
+        hash.length > 1 ? document.getElementById(decodeURIComponent(hash.slice(1))) : null;
+      const opening = sectionFromHash(location.hash);
+      if (opening) requestAnimationFrame(() => scrollToTarget(opening, false));
+      else window.scrollTo(0, 0);
+
+      // Links to this same page (logo, nav, buttons) scroll in place and keep
+      // the address clean, so a reload or reopen never lands mid-page.
+      document.addEventListener('click', (e) => {
+        if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href]');
+        if (!link || link.target || link.hasAttribute('data-lang-link') || link.classList.contains('skip-link')) return;
+        const url = new URL(link.href, location.href);
+        if (url.origin !== location.origin || url.pathname !== location.pathname || url.search !== location.search) return;
+        const section = sectionFromHash(url.hash);
+        if (url.hash && url.hash !== '#' && url.hash !== '#top' && !section) return;
+        e.preventDefault();
+        if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+        requestAnimationFrame(() => scrollToTarget(section ?? 0, true));
+      });
+    </script>
+    <script>
+      // Reveal-on-scroll: one observer, adds .is-visible once. No-ops under reduced motion (CSS).
+      const els = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add('is-visible');
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+        );
+        els.forEach((el) => io.observe(el));
+      } else {
+        els.forEach((el) => el.classList.add('is-visible'));
+      }
+
+      // Language switch keeps the visitor's place: current #hash, or the section in view.
+      document.addEventListener('click', (e) => {
+        const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-lang-link]');
+        if (!link || link.getAttribute('aria-current')) return;
+        let hash = location.hash;
+        if (!hash) {
+          const offset = (document.querySelector('[data-header]')?.getBoundingClientRect().height ?? 0) + 24;
+          let current: string | null = null;
+          document.querySelectorAll<HTMLElement>('main section[id]').forEach((s) => {
+            if (s.getBoundingClientRect().top <= offset) current = s.id;
+          });
+          if (current && window.scrollY > 80) hash = `#${current}`;
+        }
+        if (hash) {
+          e.preventDefault();
+          location.href = link.pathname + hash;
+        }
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .has-draft {
+    --notice-h: 2rem;
+  }
+  .draft-notice {
+    display: grid;
+    place-items: center;
+    height: var(--notice-h);
+    margin: 0;
+    padding: 0 var(--gutter);
+    background: var(--c-ink);
+    color: var(--c-ivory);
+    text-align: center;
+    letter-spacing: 0.12em;
+  }
+  main:focus {
+    outline: none;
+  }
+</style>
