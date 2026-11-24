@@ -5,13 +5,13 @@
  * the line still fits a phone). Length is preserved (one space → one
  * U+00A0), so a string split into parts can be re-sliced by length.
  */
-export function keepThree(text: string): string {
+export function keepThree(text: string, maxTail = 26): string {
   const words = text.split(' ');
   // Too short to have a first line of its own: leave it free to wrap.
   if (words.length < 5) return text;
   // Tie as many of the last words as stay short enough to fit a phone line.
   let tie = 2;
-  while (tie > 0 && words.slice(-(tie + 1)).join(' ').length > 26) tie--;
+  while (tie > 0 && words.slice(-(tie + 1)).join(' ').length > maxTail) tie--;
   if (tie === 0) return text;
   const head = words.slice(0, -(tie + 1)).join(' ');
   const tail = words.slice(-(tie + 1)).join('\u00A0');
