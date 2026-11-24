@@ -110,7 +110,7 @@ const links = [
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--s-5);
+    gap: var(--s-4);
     height: var(--header-h);
   }
   .site-header__logo {
@@ -118,9 +118,18 @@ const links = [
     width: 7.5rem; /* ≈ 32px tall */
     flex-shrink: 0;
   }
+  /* The logo in the site's burnt orange (Ori, 2026-11-24). */
+  .site-header__logo :global(.logo) {
+    color: var(--c-accent);
+  }
+  /*
+   * Desktop: a little larger and centred over the word HOUSE in the hero
+   * (the script below measures HOUSE and sets --logo-shift).
+   */
   @media (min-width: 64em) {
     .site-header__logo {
-      width: 10.25rem; /* ≈ 44px tall */
+      width: 12.75rem; /* ≈ 54px tall */
+      transform: translateX(var(--logo-shift, 0px));
     }
   }
 
@@ -291,6 +300,30 @@ const links = [
   const text = toggle?.querySelector<HTMLElement>('.menu-toggle__text');
 
   const header = document.querySelector<HTMLElement>('[data-header]');
+
+  // Desktop: centre the header logo over "HOUSE" in the hero.
+  const logo = document.querySelector<HTMLElement>('.site-header__logo');
+  const lead = document.querySelector<HTMLElement>('.hero__title-lead');
+  const desktop = window.matchMedia('(min-width: 64em)');
+  const centreLogo = () => {
+    if (!logo || !lead) return;
+    if (!desktop.matches) return logo.style.removeProperty('--logo-shift');
+    const range = document.createRange();
+    const text = lead.firstChild;
+    const at = text?.textContent?.indexOf('HOUSE') ?? -1;
+    if (text && at >= 0) {
+      range.setStart(text, at);
+      range.setEnd(text, at + 5);
+    } else range.selectNodeContents(lead);
+    const word = range.getBoundingClientRect();
+    logo.style.setProperty('--logo-shift', '0px');
+    const box = logo.getBoundingClientRect();
+    const shift = word.left + word.width / 2 - (box.left + box.width / 2);
+    logo.style.setProperty('--logo-shift', `${Math.max(0, Math.round(shift))}px`);
+  };
+  document.fonts?.ready.then(centreLogo);
+  window.addEventListener('resize', centreLogo);
+  centreLogo();
   const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 8);
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
