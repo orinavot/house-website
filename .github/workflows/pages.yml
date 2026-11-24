@@ -1,8 +1,6 @@
-# Preview deploy to GitHub Pages (https://orinavot.github.io/house-website/).
-# Builds the Astro site, then flattens it to relative paths with
-# scripts-preview-bundle.py so it works under the /house-website/ sub-path.
-# Marked noindex: this is a review copy, not the live site.
-name: Deploy preview to GitHub Pages
+# Live site: builds the Astro site and deploys dist/ to GitHub Pages,
+# served on the custom domain https://housepersonal.com (public/CNAME).
+name: Deploy site to GitHub Pages
 
 on:
   push:
@@ -29,13 +27,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Flatten to relative paths
-        run: python3 scripts-preview-bundle.py _site > /dev/null
-      - name: Mark preview as noindex
-        run: sed -i 's|<head>|<head><meta name="robots" content="noindex, nofollow">|' _site/*.html
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: dist
 
   deploy:
     needs: build
