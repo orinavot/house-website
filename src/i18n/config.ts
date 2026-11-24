@@ -26,8 +26,8 @@ export const localeMeta: Record<
   }
 > = {
   en: { short: 'EN', native: 'English', htmlLang: 'en', ogLocale: 'en_GB', status: 'approved' },
-  fr: { short: 'FR', native: 'Français', htmlLang: 'fr', ogLocale: 'fr_FR', status: 'draft' },
-  ru: { short: 'RU', native: 'Русский', htmlLang: 'ru', ogLocale: 'ru_RU', status: 'draft' },
+  fr: { short: 'FR', native: 'Français', htmlLang: 'fr', ogLocale: 'fr_FR', status: 'approved' },
+  ru: { short: 'RU', native: 'Русский', htmlLang: 'ru', ogLocale: 'ru_RU', status: 'approved' },
 };
 
 export function isLocale(value: string | undefined): value is Locale {
