@@ -1,0 +1,32 @@
+---
+/**
+ * GitHub Pages serves this for any missing path. It doubles as the redirect
+ * table for the old PHP site (index/services/about/contact × _eng/_fr/_rus):
+ * each old URL is sent to the matching language and homepage section.
+ * Anything else lands on the English homepage.
+ */
+const legacy = {
+  pages: { index: '', services: '#services', about: '#about', contact: '#contact' },
+  langs: { eng: 'en', fr: 'fr', rus: 'ru' },
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HOUSE Personal Property Management</title>
+    <meta name="robots" content="noindex" />
+    <script is:inline define:vars={{ legacy }}>
+      const m = location.pathname.match(/^\/(index|services|about|contact)_(eng|fr|rus)\.php$/i);
+      const target = m
+        ? '/' + legacy.langs[m[2].toLowerCase()] + '/' + legacy.pages[m[1].toLowerCase()]
+        : '/en/';
+      location.replace(target);
+    </script>
+  </head>
+  <body style="background:#ffffff">
+    <p style="font-family:sans-serif;padding:2rem"><a href="/en/">HOUSE Personal Property Management</a></p>
+  </body>
+</html>
