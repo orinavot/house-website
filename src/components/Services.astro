@@ -18,6 +18,12 @@ const { locale } = Astro.props;
 const dict = getDictionary(locale);
 const t = dict.services;
 const order: ServiceKey[] = ['maintenance', 'repairs', 'previsit', 'accounting'];
+
+// Pre-visit reads as one paragraph, not a list (Ori via Aviv, round 7).
+// Same words as the original list, joined in order with commas.
+const paragraphKeys: string[] = ['previsit'];
+const asParagraph = (list: string[]) =>
+  keepThree(list.map((s, j) => (j ? s.charAt(0).toLowerCase() + s.slice(1) : s)).join(', ') + '.');
 ---
 
 <section class="services section" id="services" aria-labelledby="services-label">
@@ -73,11 +79,15 @@ const order: ServiceKey[] = ['maintenance', 'repairs', 'previsit', 'accounting']
                 data-accordion-panel
               >
                 <div class="service__panel-inner">
-                  <ul class="service__items" role="list">
-                    {item.list.map((line) => (
-                      <li>{keepThree(line)}</li>
-                    ))}
-                  </ul>
+                  {paragraphKeys.includes(key) ? (
+                    <p class="service__items service__para">{asParagraph(item.list)}</p>
+                  ) : (
+                    <ul class="service__items" role="list">
+                      {item.list.map((line) => (
+                        <li>{keepThree(line, 20)}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
               <span class="service__hover-rule" aria-hidden="true" />
@@ -196,6 +206,13 @@ const order: ServiceKey[] = ['maintenance', 'repairs', 'previsit', 'accounting']
   }
   .service__items li:first-child {
     border-top: 0;
+  }
+  .service__para {
+    display: block;
+    max-width: 38em;
+    margin: 0;
+    padding-top: var(--s-3);
+    line-height: 1.7;
   }
   /* Short drafting tick in place of a bullet. */
   .service__items li::before {
