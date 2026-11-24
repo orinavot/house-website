@@ -12,6 +12,10 @@ const { locale } = Astro.props;
 const t = getDictionary(locale);
 const f = t.footer;
 const year = new Date().getFullYear();
+
+// Place names never break inside (Aviv, round 7): "Neve Tzedek", "Rothschild
+// Boulevard", "Неве-Цедек" stay whole; a line may only break after a "·".
+const places = (areas: string) => areas.split(' · ');
 ---
 
 <footer class="footer">
@@ -26,7 +30,11 @@ const year = new Date().getFullYear();
 
       <div class="footer__col footer__place">
         <p class="footer__heading label">{f.location}</p>
-        <p class="footer__soft">{keepThree(f.areas)}</p>
+        <p class="footer__soft">
+          {places(f.areas).map((p, i, all) => (
+            <Fragment><span class="footer__area">{p}{i < all.length - 1 ? '\u00A0·' : ''}</span>{' '}</Fragment>
+          ))}
+        </p>
         <p class="footer__soft">{keepThree(f.areasNote)}</p>
       </div>
 
@@ -59,6 +67,10 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
+  .footer__area {
+    white-space: nowrap;
+  }
+
   .footer {
     /* Burnt-orange ground (the accent). White on it 6.1:1, peach 4.6:1. */
     background: var(--c-accent);
