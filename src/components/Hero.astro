@@ -159,13 +159,15 @@ const [before, emphasis, after] = keepThreeParts([
   /* Phones: compact type and buttons so the whole photo fits the first screen. */
   @media (max-width: 47.99em) {
     .hero {
-      padding-block: var(--s-2) var(--s-7);
+      /* Title and paragraph sit 25px lower; buttons and photo 15px (Aviv, round 6). */
+      padding-block: calc(var(--s-2) + 25px) var(--s-7);
     }
     .hero__grid {
       row-gap: var(--s-4);
     }
+    /* Round 6 (Aviv): title +20%, paragraph +15%. */
     .hero__title {
-      font-size: clamp(1.75rem, 1.2rem + 2.6vw, 2.25rem);
+      font-size: clamp(2.1rem, 1.44rem + 3.12vw, 2.7rem);
     }
     .hero__title-lead {
       margin-bottom: 6px;
@@ -173,11 +175,13 @@ const [before, emphasis, after] = keepThreeParts([
     .hero__title-rest {
       max-width: none;
     }
+    /* Round 6 (Aviv): more air under the larger title, +10px before the
+       buttons, +20px between the buttons and the photo. */
     .hero__continuation {
-      margin-top: var(--s-3);
+      margin-top: calc(var(--s-3) + 16px);
     }
     .hero__lede {
-      font-size: 0.9375rem;
+      font-size: 1.078rem;
       line-height: 1.5;
     }
     .hero__meta {
@@ -192,6 +196,7 @@ const [before, emphasis, after] = keepThreeParts([
     }
     .hero__media {
       padding: 0 0 0.5rem 0.5rem;
+      margin-top: 20px;
     }
   }
 
@@ -321,7 +326,7 @@ const [before, emphasis, after] = keepThreeParts([
   }
   @media (max-width: 47.99em) {
     :global(html[lang='ru']) .hero__title {
-      font-size: clamp(1.5rem, 1.1rem + 1.8vw, 1.875rem);
+      font-size: clamp(1.8rem, 1.32rem + 2.16vw, 2.25rem);
     }
     :global(html[lang='ru']) .hero__title-rest {
       max-width: none;
