@@ -78,16 +78,16 @@ export const en = {
         title: 'Pre-Visit Arrangements',
         list: [
           'House cleaning and organizing',
-          'Bed, towel and linen changing (upon request)',
-          'Flower arrangements (upon request)',
-          'Airport pickup (upon request)',
-          'Grocery shopping (upon request)',
-          'Tours, tickets, restaurant reservations and other services (upon request)',
+          'Bed, towel and linen changing',
+          'Flower arrangements',
+          'Airport pickup',
+          'Grocery shopping',
+          'Tours, tickets, restaurant reservations and other services',
         ],
       },
       accounting: {
         title: 'Accounting & Other',
-        list: ['Monthly financial reports: services, repairs, municipal fees, etc.', 'Legal representation (upon request)'],
+        list: ['Monthly financial reports: services, repairs, municipal fees, etc.', 'Legal representation'],
       },
     },
     imageAlt:
@@ -124,8 +124,8 @@ export const en = {
   footer: {
     tagline: 'Personal Property Management',
     location: 'Tel Aviv, Israel',
-    areas: 'Neve Tzedek · Rothschild Boulevard · the seafront · central Tel Aviv',
-    areasNote: 'Properties in Ramat Gan, Givatayim and Herzliya are also managed on request.',
+    areas: 'central Tel Aviv · Neve Tzedek · Rothschild Boulevard · the seafront · old Jaffa',
+    areasNote: 'Our primary areas of expertise, with services available in other locations.',
     navHeading: 'Pages',
     contactHeading: 'Contact information',
     languageHeading: 'Language',
