@@ -78,6 +78,9 @@ const jsonLd = {
     <meta property="og:image" content={new URL(og.src, Astro.site).href} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#f5f4f0" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     <script is:inline>document.documentElement.classList.add('js');</script>
